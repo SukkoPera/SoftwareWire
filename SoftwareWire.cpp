@@ -218,14 +218,7 @@ void SoftwareWire::beginTransmission(uint8_t address)
 
 
 //
-void SoftwareWire::beginTransmission(int address)
-{
-  beginTransmission((uint8_t)address);
-}
-
-
-//
-uint8_t SoftwareWire::endTransmission(boolean sendStop)
+uint8_t SoftwareWire::endTransmission(uint8_t sendStop)
 {
   if(sendStop)
     i2c_stop();
@@ -239,7 +232,8 @@ uint8_t SoftwareWire::endTransmission(boolean sendStop)
 //
 // The requestFrom() read the data from the I2C bus and stores it in a buffer.
 //
-uint8_t SoftwareWire::requestFrom(uint8_t address, uint8_t size, boolean sendStop)
+//~ uint8_t SoftwareWire::requestFrom(uint8_t address, uint8_t size, boolean sendStop)
+uint8_t SoftwareWire::requestFrom(uint8_t address, uint8_t quantity, uint32_t iaddress, uint8_t isize, uint8_t sendStop)
 {
   uint8_t n=0;             // number of valid received bytes. Start with 0 bytes.
 
@@ -264,9 +258,9 @@ uint8_t SoftwareWire::requestFrom(uint8_t address, uint8_t size, boolean sendSto
 
       // TODO: check if the Slave returns less bytes than requested.
 
-      for(; n<size; n++)
+      for(; n<quantity; n++)
       {
-        if( n < (size - 1))
+        if( n < (quantity - 1))
           rxBuf[n] = i2c_read(true);        // read with ack
         else
           rxBuf[n] = i2c_read(false);       // last byte, read with nack
@@ -291,14 +285,6 @@ uint8_t SoftwareWire::requestFrom(uint8_t address, uint8_t size, boolean sendSto
 
   return( n);
 }
-
-
-//
-uint8_t SoftwareWire::requestFrom(int address, int size, boolean sendStop)
-{
-  return requestFrom( (uint8_t) address, (uint8_t) size, sendStop);
-}
-
 
 // must be called in:
 // slave tx event callback
@@ -356,6 +342,12 @@ int SoftwareWire::peek(void)
   }
 
   return(data);
+}
+
+
+void SoftwareWire::flush(void)
+{
+	// Nothing to do?
 }
 
 

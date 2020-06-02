@@ -3,7 +3,7 @@
 #define SoftwareWire_h
 
 #include <Arduino.h>
-#include <Wire.h>
+#include <AbstractWire.h>
 
 
 // Transmission status error, the return value of endTransmission()
@@ -16,34 +16,40 @@
 #define SOFTWAREWIRE_BUFSIZE 32        // same as buffer size of Arduino Wire library
 
 
-class SoftwareWire : public TwoWire
+class SoftwareWire : public AbstractWire
 {
 public:
   SoftwareWire();
   SoftwareWire(uint8_t sdaPin, uint8_t sclPin, boolean pullups = true, boolean detectClockStretch = true);
   virtual ~SoftwareWire();
-  void end();
+  virtual void end() override;
 
-  void begin();
+  virtual void begin() override;
 
   // Generate compile error when slave mode begin(address) is used
-  void __attribute__ ((error("I2C/TWI Slave mode is not supported by the SoftwareWire library"))) begin(uint8_t addr);
-  void __attribute__ ((error("I2C/TWI Slave mode is not supported by the SoftwareWire library"))) begin(int addr);
+  virtual void __attribute__ ((error("I2C/TWI Slave mode is not supported by the SoftwareWire library"))) begin(uint8_t addr) override {}
 
-  void setClock(uint32_t clock);
-  void beginTransmission(uint8_t address);
-  void beginTransmission(int address);
-  uint8_t endTransmission(boolean sendStop = true);
-  uint8_t requestFrom(uint8_t address, uint8_t size, boolean sendStop = true);
-  uint8_t requestFrom(int address, int size, boolean sendStop = true);
-  size_t write(uint8_t data) override;
-  size_t write(const uint8_t *data, size_t quantity) override;
-  int available(void) override;
-  int read(void) override;
+  using AbstractWire:: begin;
+
+  virtual void setClock(uint32_t clock) override;
+  virtual void beginTransmission(uint8_t address) override;
+  virtual uint8_t endTransmission(uint8_t sendStop) override;
+  using AbstractWire::endTransmission;
+
+  virtual uint8_t requestFrom(uint8_t address, uint8_t quantity, uint32_t iaddress, uint8_t isize, uint8_t sendStop) override;
+  using AbstractWire::requestFrom;
+
+  virtual size_t write(uint8_t data) override;
+  virtual size_t write(const uint8_t *data, size_t quantity) override;
+  using AbstractWire::write;
+  virtual int available(void) override;
+  virtual int read(void) override;
   int readBytes(uint8_t* buf, uint8_t size);
   int readBytes(char * buf, uint8_t size);
   int readBytes(char * buf, int size);
-  int peek(void) override;
+  virtual int peek(void) override;
+  virtual void flush(void) override;
+
   void setTimeout(long timeout);  // timeout to wait for the I2C bus
   void printStatus(Print& Ser);   // print information using specified object class
 
